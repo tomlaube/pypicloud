@@ -47,6 +47,9 @@ class ICache(object):
     def postfork(cls, **kwargs):
         """ This method will be called after uWSGI forks """
 
+    def get_digest(self, package):
+        return self.storage.get_digest(package)
+
     def get_url(self, package):
         """
         Get the download url for a package
@@ -74,7 +77,7 @@ class ICache(object):
         for pkg in packages:
             self.save(pkg)
 
-    def upload(self, filename, data, name=None, version=None, summary=None):
+    def upload(self, filename, data, digest, name=None, version=None, summary=None):
         """
         Save this package to the storage mechanism and to the cache
 
@@ -111,7 +114,7 @@ class ICache(object):
         old_pkg = self.fetch(filename)
         if old_pkg is not None and not self.allow_overwrite:
             raise ValueError("Package '%s' already exists!" % filename)
-        new_pkg = self.package_class(name, version, filename, summary=summary)
+        new_pkg = self.package_class(name, version, filename, digest, summary=summary)
         self.storage.upload(new_pkg, data)
         self.save(new_pkg)
         return new_pkg

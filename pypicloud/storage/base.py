@@ -18,6 +18,10 @@ class IStorage(object):
         """ Return a list or generator of all packages """
         raise NotImplementedError
 
+    def get_digest(self, package):
+        """ Return package sha256"""
+        raise NotImplementedError
+
     def get_url(self, package):
         """
         Create or return an HTTP url for a package file

@@ -33,7 +33,6 @@ REQUIREMENTS = [
 ]
 
 EXTRAS = {
-    "ldap": ["python-ldap"],
     "dynamo": ["flywheel >= 0.2.0"],
     "redis": ["redis"],
     "gcs": ["google-cloud-storage>=1.10.0"],
@@ -43,11 +42,8 @@ EXTRAS["all_plugins"] = sum(EXTRAS.values(), [])
 
 EXTRAS["test"] = EXTRAS["all_plugins"] + [
     "mock",
-    "mockldap",
     "moto",
-    "mysqlclient",
     "nose",
-    "psycopg2-binary",
     "requests",
     "webtest",
 ]

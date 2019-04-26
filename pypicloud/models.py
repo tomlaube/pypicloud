@@ -34,7 +34,7 @@ class Package(object):
     """
 
     def __init__(
-        self, name, version, filename, last_modified=None, summary=None, **kwargs
+            self, name, version, filename, digest, last_modified=None, summary=None, **kwargs
     ):
         self.name = normalize_name(name)
         self.version = version
@@ -45,11 +45,15 @@ class Package(object):
         else:
             self.last_modified = datetime.utcnow()
         self.summary = summary
+        self.digest = digest
         self.data = kwargs
+
+    def get_digest(self, request):
+        return request.db.get_digest(self)
 
     def get_url(self, request):
         """ Create path to the download link """
-        return request.db.get_url(self)
+        return request.db.get_url(self)  + "#sha256=" + self.get_digest(request)
 
     @property
     def parsed_version(self):
@@ -85,6 +89,7 @@ class Package(object):
             "filename": self.filename,
             "last_modified": self.last_modified,
             "version": self.version,
+            "digest": self.digest,
             "url": self.get_url(request),
             "summary": self.summary,
         }

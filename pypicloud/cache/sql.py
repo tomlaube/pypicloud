@@ -79,9 +79,10 @@ class SQLPackage(Package, Base):
     filename = Column(String(255, convert_unicode=True), primary_key=True)
     name = Column(String(255, convert_unicode=True), index=True, nullable=False)
     version = Column(String(1000, convert_unicode=True), nullable=False)
+    digest = Column(String(1000, convert_unicode=True), nullable=True)
     last_modified = Column(DateTime(), index=True, nullable=False)
     summary = Column(String(255, convert_unicode=True), index=True, nullable=True)
-    data = Column(JSONEncodedDict(), nullable=False)
+    data = Column(JSONEncodedDict(), nullable=True)
 
 
 def create_schema(engine):

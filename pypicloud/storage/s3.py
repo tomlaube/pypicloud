@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 import posixpath
 import unicodedata
+import io
+import hashlib
 
 import boto3
 import logging
@@ -121,6 +123,7 @@ class S3Storage(ObjectStoreStorage):
         name = obj.metadata.get("name")
         version = obj.metadata.get("version")
         summary = obj.metadata.get("summary")
+        digest = obj.metadata.get("digest")
         # We used to not store metadata. This is for backwards
         # compatibility
         if name is None or version is None:
@@ -131,7 +134,7 @@ class S3Storage(ObjectStoreStorage):
                 return None
 
         return factory(
-            name, version, filename, obj.last_modified, summary, path=obj.key
+            name, version, filename, digest, obj.last_modified, summary
         )
 
     def list(self, factory=Package):
@@ -142,6 +145,17 @@ class S3Storage(ObjectStoreStorage):
             pkg = self.package_from_object(obj, factory)
             if pkg is not None:
                 yield pkg
+
+    def get_digest(self, package):
+        meta = self.bucket.Object(self.get_path(package)).metadata
+        if 'digest' in meta:
+            return meta['digest']
+        else:
+            buff = io.BytesIO()
+            self.bucket.meta.client.download_fileobj(self.bucket.name, self.get_path(package), buff)
+            buff.seek(0)
+            return hashlib.sha256(buff.read()).hexdigest()
+
 
     def _generate_url(self, package):
         """ Generate a signed url to the S3 file """
@@ -190,7 +204,7 @@ class S3Storage(ObjectStoreStorage):
             kwargs["ACL"] = self.object_acl
         if self.storage_class is not None:
             kwargs["StorageClass"] = self.storage_class
-        metadata = {"name": package.name, "version": package.version}
+        metadata = {"name": package.name, "version": package.version, "digest": package.digest}
         if package.summary:
             if isinstance(package.summary, six.text_type):
                 summary = package.summary

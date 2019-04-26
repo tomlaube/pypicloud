@@ -1,5 +1,7 @@
 """ Views for simple pip interaction """
 import posixpath
+import hashlib
+import io
 
 import pkg_resources
 import logging
@@ -30,11 +32,14 @@ def upload(request, content, name=None, version=None, summary=None):
     if action == "file_upload":
         if not request.access.has_permission(name, "write"):
             return request.forbid()
+        print("TYPE", type(content.file))
         try:
+            file_content = content.file.read()
             return request.db.upload(
                 content.filename,
-                content.file,
+                file_content,
                 name=name,
+                digest=hashlib.sha256(file_content).hexdigest(),
                 version=version,
                 summary=summary,
             )
